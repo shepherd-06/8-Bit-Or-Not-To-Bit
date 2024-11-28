@@ -24,8 +24,11 @@ void setup() {
 
   // Initialize LCD
   lcd.begin(16, 2);
-  lcd.print("Initializing...");
-  delay(2000); // Show welcome message
+  lcd.setCursor(0, 0); 
+  lcd.print("8 bit or not to");
+  lcd.setCursor(6, 1); 
+  lcd.print("bit!");
+  delay(5000); // Show welcome message
   lcd.clear();
 }
 
