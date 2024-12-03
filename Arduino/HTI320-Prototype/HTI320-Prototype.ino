@@ -1,12 +1,17 @@
 #include <LiquidCrystal.h>
 
+// Digital Pins
 // Ultrasonic Sensor Pins
 const int trigPin = 7;
 const int echoPin = 8;
+const int switchPin = 2; // Switch connected to D2
 
 
+//Analog Pins
 const int ldrPin = A0; // LDR connected to analog pin A0
-const int potPin = A1; // Potentiometer connected to A2
+const int potPin = A2; // Potentiometer connected to A2
+const int ldrPin2 = A3; // second LDR, connect to A3; because 1 is not enough!
+
 
 
 // LCD Pins
@@ -19,6 +24,8 @@ void setup() {
   // Initialize Ultrasonic Sensor Pins
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(switchPin, INPUT_PULLUP); // Enable internal pull-up resistor for the switch
+
 
   // Initialize LCD
   lcd.begin(16, 2);
@@ -31,6 +38,18 @@ void setup() {
 }
 
 void loop() {
+
+  int switchState = digitalRead(switchPin);
+  // Turn the LED on or off based on the switch state
+  if (switchState == LOW) {
+    // digitalWrite(ledPin, HIGH); // Turn on the LED
+    Serial.println("Switch ON");
+  } else {
+    // digitalWrite(ledPin, LOW);  // Turn off the LED
+    Serial.println("Switch OFF");
+  }
+
+
   long duration, cm;
 
   // Trigger the ultrasonic sensor
@@ -53,17 +72,22 @@ void loop() {
 
   
   int ldrValue = analogRead(ldrPin); // Read the LDR value
+  int secondLdrVal = analogRead(ldrPin2); // second LDR value.
+
   Serial.print("LDR Value: ");
   Serial.println(ldrValue); // Print the value (0 to 1023)
+
+  Serial.print("2nd LDR Val: ");
+  Serial.println(secondLdrVal);
 
   int manSoundIntensity = analogRead(potPin);
 
   String labels[] = {"US:", "LRD:", "POT: "};
-  long values[] = {duration, ldrValue, manSoundIntensity};
+  long values[] = {duration, ldrValue + secondLdrVal, manSoundIntensity};
 
   displayOnLCD(labels, values, 3, 3);
-  sendHexColorWithRandomMapping(duration, ldrValue, manSoundIntensity);
-  delay(500); // Wait before the next reading
+  sendHexColorWithRandomMapping(duration, ldrValue + secondLdrVal, manSoundIntensity);
+  delay(2000); // Wait before the next reading
 }
 
 // Function to display up to three strings and three values on the LCD
@@ -100,27 +124,6 @@ void displayOnLCD(String labels[], long values[], int numLabels, int numValues) 
     }
   }
 }
-
-
-// void sendHexColor(long distance, int soundIntensity) {
-//   // Map distance to Red (0-255)
-//   int red = map(distance, 0, 400, 0, 255); // Assuming max 400 cm
-//   red = constrain(red, 0, 255);           // Ensure the value is within bounds
-
-//   // Map sound intensity to Green (0-255)
-//   int green = map(soundIntensity, 0, 1023, 0, 255); // Analog values are 0-1023
-//   green = constrain(green, 0, 255);
-
-//   // Blue as a complement of red (optional)
-//   int blue = 255 - red;
-
-//   // Format as a hexadecimal color
-//   char hexColor[8]; // Enough space for "#RRGGBB\0"
-//   sprintf(hexColor, "#%02X%02X%02X", red, green, blue);
-
-//   // Send the hexadecimal color via Serial
-//   Serial.println(hexColor);
-// }
 
 
 void sendHexColorWithRandomMapping(long distance, int ldrValue, int soundIntensity) {
@@ -163,12 +166,12 @@ void sendHexColorWithRandomMapping(long distance, int ldrValue, int soundIntensi
     Serial.println(hexColor);
 
     // Debugging: Print which sensor controls which channel
-    Serial.print("Red: ");
-    Serial.println(randomMapping[0]);
-    Serial.print("Green: ");
-    Serial.println(randomMapping[1]);
-    Serial.print("Blue: ");
-    Serial.println(randomMapping[2]);
+    // Serial.print("Red: ");
+    // Serial.println(randomMapping[0]);
+    // Serial.print("Green: ");
+    // Serial.println(randomMapping[1]);
+    // Serial.print("Blue: ");
+    // Serial.println(randomMapping[2]);
   }
 }
 
