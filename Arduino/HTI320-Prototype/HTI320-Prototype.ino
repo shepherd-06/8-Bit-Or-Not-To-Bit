@@ -41,13 +41,13 @@ void loop() {
 
   int switchState = digitalRead(switchPin);
   // Turn the LED on or off based on the switch state
-  if (switchState == LOW) {
-    // digitalWrite(ledPin, HIGH); // Turn on the LED
-    Serial.println("Switch ON");
-  } else {
-    // digitalWrite(ledPin, LOW);  // Turn off the LED
-    Serial.println("Switch OFF");
-  }
+  // if (switchState == LOW) {
+  //   // digitalWrite(ledPin, HIGH); // Turn on the LED
+  //   Serial.println("Switch ON");
+  // } else {
+  //   // digitalWrite(ledPin, LOW);  // Turn off the LED
+  //   Serial.println("Switch OFF");
+  // }
 
 
   long duration, cm;
@@ -63,22 +63,22 @@ void loop() {
   duration = pulseIn(echoPin, HIGH);
 
   // Calculate distance in centimeters
-  cm = duration / 29 / 2;
+  //cm = duration / 29 / 2;
 
   // Print distance to Serial Monitor
-  Serial.print("Distance: ");
-  Serial.print(cm);
-  Serial.println(" cm");
+  // Serial.print("Distance: ");
+  // Serial.print(cm);
+  // Serial.println(" cm");
 
   
   int ldrValue = analogRead(ldrPin); // Read the LDR value
   int secondLdrVal = analogRead(ldrPin2); // second LDR value.
 
-  Serial.print("LDR Value: ");
-  Serial.println(ldrValue); // Print the value (0 to 1023)
+  // Serial.print("LDR Value: ");
+  // Serial.println(ldrValue); // Print the value (0 to 1023)
 
-  Serial.print("2nd LDR Val: ");
-  Serial.println(secondLdrVal);
+  // Serial.print("2nd LDR Val: ");
+  // Serial.println(secondLdrVal);
 
   int manSoundIntensity = analogRead(potPin);
 
@@ -87,7 +87,7 @@ void loop() {
 
   displayOnLCD(labels, values, 3, 3);
   sendHexColorWithRandomMapping(duration, ldrValue + secondLdrVal, manSoundIntensity);
-  delay(2000); // Wait before the next reading
+  delay(150); // Wait before the next reading' 150ms - SUPER SONIC
 }
 
 // Function to display up to three strings and three values on the LCD
@@ -162,7 +162,7 @@ void sendHexColorWithRandomMapping(long distance, int ldrValue, int soundIntensi
     sprintf(hexColor, "#%02X%02X%02X", red, green, blue);
 
     // Send the hexadecimal color via Serial
-    Serial.print("Hex Color: ");
+    // Serial.print("Hex Color: ");
     Serial.println(hexColor);
 
     // Debugging: Print which sensor controls which channel
