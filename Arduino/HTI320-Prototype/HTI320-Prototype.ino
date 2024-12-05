@@ -11,6 +11,7 @@ const int switchPin = 2; // Switch connected to D2
 const int ldrPin = A0; // LDR connected to analog pin A0
 const int potPin = A2; // Potentiometer connected to A2
 const int ldrPin2 = A3; // second LDR, connect to A3; because 1 is not enough!
+const int soundTest = A5;
 
 
 
@@ -19,7 +20,7 @@ LiquidCrystal lcd(9, 10, 4, 5, 6, 3); // RS, EN, D4, D5, D6, D7
 
 void setup() {
   // Initialize Serial Monitor
-  Serial.begin(9600);
+  Serial.begin(28800); // 9600 is default BAUD rate.
 
   // Initialize Ultrasonic Sensor Pins
   pinMode(trigPin, OUTPUT);
@@ -73,9 +74,13 @@ void loop() {
   
   int ldrValue = analogRead(ldrPin); // Read the LDR value
   int secondLdrVal = analogRead(ldrPin2); // second LDR value.
+  int soundRead = analogRead(soundTest);
 
   // Serial.print("LDR Value: ");
   // Serial.println(ldrValue); // Print the value (0 to 1023)
+
+  // Serial.print("Sound: ");
+  // Serial.println(soundRead);
 
   // Serial.print("2nd LDR Val: ");
   // Serial.println(secondLdrVal);

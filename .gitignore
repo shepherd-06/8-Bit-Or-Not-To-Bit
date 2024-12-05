@@ -1,6 +1,7 @@
 .DS_Store
 .git/
 .venv/
+.vscode/
 
 
 # git ignore for unity project inside Unity/Myproject
