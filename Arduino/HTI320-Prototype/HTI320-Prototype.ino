@@ -1,4 +1,4 @@
-#include <LiquidCrystal.h>
+// #include <LiquidCrystal.h>
 
 // Digital Pins
 // Ultrasonic Sensor Pins
@@ -16,11 +16,11 @@ const int soundTest = A5;
 
 
 // LCD Pins
-LiquidCrystal lcd(9, 10, 4, 5, 6, 3); // RS, EN, D4, D5, D6, D7
+// LiquidCrystal lcd(9, 10, 4, 5, 6, 3); // RS, EN, D4, D5, D6, D7
 
 void setup() {
   // Initialize Serial Monitor
-  Serial.begin(28800); // 9600 is default BAUD rate.
+  Serial.begin(9600); // 9600 is default BAUD rate.
 
   // Initialize Ultrasonic Sensor Pins
   pinMode(trigPin, OUTPUT);
@@ -29,29 +29,17 @@ void setup() {
 
 
   // Initialize LCD
-  lcd.begin(16, 2);
-  lcd.setCursor(0, 0); 
-  lcd.print("8 bit or not to");
-  lcd.setCursor(6, 1); 
-  lcd.print("bit!");
-  delay(5000); // Show welcome message
-  lcd.clear();
+  // lcd.begin(16, 2);
+  // lcd.setCursor(0, 0); 
+  // lcd.print("8 bit or not to");
+  // lcd.setCursor(6, 1); 
+  // lcd.print("bit!");
+  // delay(5000); // Show welcome message
+  // lcd.clear();
 }
 
 void loop() {
-
-  int switchState = digitalRead(switchPin);
-  // Turn the LED on or off based on the switch state
-  // if (switchState == LOW) {
-  //   // digitalWrite(ledPin, HIGH); // Turn on the LED
-  //   Serial.println("Switch ON");
-  // } else {
-  //   // digitalWrite(ledPin, LOW);  // Turn off the LED
-  //   Serial.println("Switch OFF");
-  // }
-
-
-  long duration, cm;
+  long duration;
 
   // Trigger the ultrasonic sensor
   digitalWrite(trigPin, LOW);
@@ -62,15 +50,6 @@ void loop() {
 
   // Read the echo pin
   duration = pulseIn(echoPin, HIGH);
-
-  // Calculate distance in centimeters
-  //cm = duration / 29 / 2;
-
-  // Print distance to Serial Monitor
-  // Serial.print("Distance: ");
-  // Serial.print(cm);
-  // Serial.println(" cm");
-
   
   int ldrValue = analogRead(ldrPin); // Read the LDR value
   int secondLdrVal = analogRead(ldrPin2); // second LDR value.
@@ -90,45 +69,45 @@ void loop() {
   String labels[] = {"US:", "LRD:", "POT: "};
   long values[] = {duration, ldrValue + secondLdrVal, manSoundIntensity};
 
-  displayOnLCD(labels, values, 3, 3);
+  // displayOnLCD(labels, values, 3, 3);
   sendHexColorWithRandomMapping(duration, ldrValue + secondLdrVal, manSoundIntensity);
   delay(150); // Wait before the next reading' 150ms - SUPER SONIC
 }
 
 // Function to display up to three strings and three values on the LCD
-void displayOnLCD(String labels[], long values[], int numLabels, int numValues) {
-  /**
-  * The displayOnLCD function dynamically displays up to three labels and three values on a 16x2 LCD. 
-  * It formats and adjusts the content to fit the LCD screen's two rows, 
-  * ensuring it accommodates varying numbers of labels and values. 
-  * Excess text is truncated if it exceeds the 16-character limit.
-  **/
-  lcd.clear(); // Clear the LCD for new content
+// void displayOnLCD(String labels[], long values[], int numLabels, int numValues) {
+//   /**
+//   * The displayOnLCD function dynamically displays up to three labels and three values on a 16x2 LCD. 
+//   * It formats and adjusts the content to fit the LCD screen's two rows, 
+//   * ensuring it accommodates varying numbers of labels and values. 
+//   * Excess text is truncated if it exceeds the 16-character limit.
+//   **/
+//   lcd.clear(); // Clear the LCD for new content
 
-  // Display labels on the first row
-  lcd.setCursor(0, 0); // Row 0
-  int charCount = 0;   // Track characters printed on the row
-  for (int i = 0; i < numLabels && charCount < 16; i++) {
-    lcd.print(labels[i]); // Print the label
-    charCount += labels[i].length();
-    if (i < numLabels - 1 && charCount < 15) {
-      lcd.print(" "); // Add space between labels
-      charCount++;
-    }
-  }
+//   // Display labels on the first row
+//   lcd.setCursor(0, 0); // Row 0
+//   int charCount = 0;   // Track characters printed on the row
+//   for (int i = 0; i < numLabels && charCount < 16; i++) {
+//     lcd.print(labels[i]); // Print the label
+//     charCount += labels[i].length();
+//     if (i < numLabels - 1 && charCount < 15) {
+//       lcd.print(" "); // Add space between labels
+//       charCount++;
+//     }
+//   }
 
-  // Display values on the second row
-  lcd.setCursor(0, 1); // Row 1
-  charCount = 0;       // Reset character count for the second row
-  for (int i = 0; i < numValues && charCount < 16; i++) {
-    lcd.print(values[i]); // Print the value
-    charCount += String(values[i]).length();
-    if (i < numValues - 1 && charCount < 15) {
-      lcd.print(" "); // Add space between values
-      charCount++;
-    }
-  }
-}
+//   // Display values on the second row
+//   lcd.setCursor(0, 1); // Row 1
+//   charCount = 0;       // Reset character count for the second row
+//   for (int i = 0; i < numValues && charCount < 16; i++) {
+//     lcd.print(values[i]); // Print the value
+//     charCount += String(values[i]).length();
+//     if (i < numValues - 1 && charCount < 15) {
+//       lcd.print(" "); // Add space between values
+//       charCount++;
+//     }
+//   }
+// }
 
 
 void sendHexColorWithRandomMapping(long distance, int ldrValue, int soundIntensity) {

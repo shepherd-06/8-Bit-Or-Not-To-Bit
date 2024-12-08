@@ -2,15 +2,17 @@ import pygame
 import time
 import random
 import serial
+import threading
+from collections import deque
 
 # Constants
 WINDOW_SIZE = 400
 GRID_SIZE = 20
 FPS = 60
-COLOR_CHANGE_INTERVAL = 0.15  # 150 ms
-REVERT_TO_WHITE_INTERVAL = 10  # 10 seconds
+MIN_COLOR_LIFETIME = 5  # Minimum color lifespan (seconds)
+MAX_COLOR_LIFETIME = 10  # Maximum color lifespan (seconds)
 SERIAL_PORT = '/dev/cu.usbmodem14201'  # Update as per your system
-BAUD_RATE = 28800 # 9600 is default but we need speed.
+BAUD_RATE = 9600  # 9600 is default but we need speed.
 
 # Validate if a string is a hex color code
 def is_valid_hex_color(color):
@@ -24,17 +26,19 @@ def hex_to_rgb(hex_color):
 def lerp_color(c1, c2, t):
     return tuple(int(c1[i] + (c2[i] - c1[i]) * t) for i in range(3))
 
-# Read color codes from the serial port
-def read_serial_color(ser):
-    if ser.in_waiting > 0:
-        try:
-            data = ser.readline().decode('utf-8').strip()
-            if is_valid_hex_color(data):
-                print(data)
-                return data
-        except Exception as e:
-            print(f"Error reading serial data: {e}")
-    return None
+
+# Read color codes from the serial port and add to the queue
+def read_serial_colors(ser, color_queue, stop_event):
+    while not stop_event.is_set():
+        if ser.in_waiting > 0:
+            try:
+                data = ser.readline().decode('utf-8').strip()
+                if is_valid_hex_color(data):
+                    color_queue.append(hex_to_rgb(data))
+                    #print("color in queue: ", len(color_queue))
+            except Exception as e:
+                print(f"Error reading serial data: {e}")
+        time.sleep(0.05)  # Small delay to prevent busy-waiting
 
 # Main function
 def main():
@@ -48,19 +52,33 @@ def main():
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
         print(f"Connected to {SERIAL_PORT} at {BAUD_RATE} baud.")
-        time.sleep(2)  # Give the Arduino some time to reset
+        time.sleep(3)  # Give the Arduino some time to reset
     except serial.SerialException as e:
         print(f"Error: {e}")
         return
 
     # Create grid
     rows, cols = WINDOW_SIZE // GRID_SIZE, WINDOW_SIZE // GRID_SIZE
-    grid = [[{"color": hex_to_rgb("#FFFFFF"), "last_update": time.time()} for _ in range(cols)] for _ in range(rows)]
+    grid = [[{"color": hex_to_rgb("#FFFFFF"), 
+              "end_time": time.time() + random.uniform(MIN_COLOR_LIFETIME, MAX_COLOR_LIFETIME)} 
+             for _ in range(cols)] for _ in range(rows)]
+
+    # Color queue
+    color_queue = deque()
+
+    # Threading setup
+    stop_event = threading.Event()
+    serial_thread = threading.Thread(target=read_serial_colors, args=(ser, color_queue, stop_event))
+    serial_thread.start()
+
+    # Wait 20 seconds before starting the main loop
+    print("Waiting 20 seconds before starting...")
+    time.sleep(20)
 
     running = True
-    last_color_change = time.time()
 
     while running:
+        print("colors in queue: ", len(color_queue))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -68,40 +86,31 @@ def main():
         # Fill the background
         screen.fill((255, 255, 255))
 
-        # Read new color from serial
-        new_color = read_serial_color(ser)
-
         # Update grid colors
         current_time = time.time()
-        if current_time - last_color_change >= COLOR_CHANGE_INTERVAL:
-            for row in range(rows):
-                for col in range(cols):
-                    cell = grid[row][col]
+        for row in range(rows):
+            for col in range(cols):
+                cell = grid[row][col]
 
-                    # Revert to white after the interval
-                    if current_time - cell["last_update"] >= REVERT_TO_WHITE_INTERVAL:
-                        cell["color"] = hex_to_rgb("#FFFFFF")
+                # If the cell's lifetime has ended, assign a new color from the queue
+                if current_time >= cell["end_time"]:
+                    if color_queue:
+                        cell["color"] = color_queue.popleft()
+                    else:
+                        cell["color"] = hex_to_rgb("#FFFFFF")  # Default to white if no colors in queue
 
-                    # Randomly choose a cell to update
-                    if new_color:
-                        random_row = random.randint(0, rows - 1)
-                        random_col = random.randint(0, cols - 1)
-                        grid[random_row][random_col]["color"] = hex_to_rgb(new_color)
-                        grid[random_row][random_col]["last_update"] = current_time
+                    # Set a new random lifetime
+                    cell["end_time"] = current_time + random.uniform(MIN_COLOR_LIFETIME, MAX_COLOR_LIFETIME)
 
-                    # Get colors from adjacent cells (gradient effect)
-                    c1 = grid[max(0, row - 1)][max(0, col - 1)]["color"]  # Top-left
-                    c2 = grid[max(0, row - 1)][min(cols - 1, col + 1)]["color"]  # Top-right
-                    c3 = grid[min(rows - 1, row + 1)][max(0, col - 1)]["color"]  # Bottom-left
-                    c4 = grid[min(rows - 1, row + 1)][min(cols - 1, col + 1)]["color"]  # Bottom-right
-
-                    t_x = random.random()  # Random interpolation factor for x
-                    t_y = random.random()  # Random interpolation factor for y
-                    top_color = lerp_color(c1, c2, t_x)
-                    bottom_color = lerp_color(c3, c4, t_x)
-                    cell["color"] = lerp_color(top_color, bottom_color, t_y)
-
-            last_color_change = current_time
+                # Get colors from adjacent cells (gradient effect)
+                neighbors = [
+                    grid[max(0, row - 1)][col]["color"],  # Top
+                    grid[min(rows - 1, row + 1)][col]["color"],  # Bottom
+                    grid[row][max(0, col - 1)]["color"],  # Left
+                    grid[row][min(cols - 1, col + 1)]["color"],  # Right
+                ]
+                avg_color = tuple(sum(c[i] for c in neighbors) // len(neighbors) for i in range(3))
+                cell["color"] = lerp_color(cell["color"], avg_color, 0.1)  # Smooth transition
 
         # Draw the grid
         for row in range(rows):
@@ -117,6 +126,8 @@ def main():
         clock.tick(FPS)
 
     # Cleanup
+    stop_event.set()
+    serial_thread.join()
     ser.close()
     pygame.quit()
 
