@@ -13,4 +13,56 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-/Unity/My project (1)/[Ll]ibrary/
+# Unity Generated Files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+
+# User Specific Files
+*.swp
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.suo
+*.bench
+
+# Crash Reports
+*.stackdump
+
+# Unity Auto-Generated Files
+*.unityproj
+*.log
+*.lock
+
+# Visual Studio Code
+.vscode/
+
+# Rider IDE
+.idea/
+*.iml
+
+# Mac System Files
+.DS_Store
+._*
+
+# Windows System Files
+Thumbs.db
+desktop.ini
+
+# JetBrains Rider
+.idea/
+
+# Unity Asset Files
+/[Aa]ssets/**/*.cs.meta
+/[Aa]ssets/**/*.prefab.meta
+/[Aa]ssets/**/*.unity.meta
+
+# Build Results
+/[Bb]uilds/
