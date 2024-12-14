@@ -104,6 +104,6 @@ Received only three hex color codes per second from the Arduino. The original pl
 3. Hardware Schema
 
 The hardware setup is detailed in the following schema:
-[![Hardware Schema](Assets/Picture5.png)](Assets/'HTI320 - Yoru!.pdf')
+[![Hardware Schema](Assets/Picture5.png)]([Assets/'HTI320 - Yoru!.pdf](https://github.com/shepherd-06/8-Bit-Or-Not-To-Bit/blob/master/Assets/HTI320%20-%20Yoru!.pdf)')
 
 ![Additional View 3](Assets/Picture6.png)
